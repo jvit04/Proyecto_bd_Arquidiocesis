@@ -2,7 +2,15 @@ package controllers;
 import java.io.File;
 import java.sql.*;
 
-import application.*;
+import persistencia.importarSQL;
+import clases.Clerigo;
+import clases.Parroquia;
+import clases.Vicaria;
+import clases.VistaReporte;
+import utilities.interfaces.cargarClerigos;
+import utilities.interfaces.cargarVicarias;
+import utilities.interfaces.cargarVistaReporte;
+import utilities.interfaces.guardarParroquiaSQL;
 import javafx.scene.control.ComboBox;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -18,17 +26,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import persistencia.*;
 import utilities.RegexPatterns;
 import javafx.scene.control.ChoiceBox;
 
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 import javafx.scene.control.Alert;
-import java.time.LocalDate;
 
 import static utilities.guardarArchivoEnRuta.guardarArchivo;
 // Clase de los controladores java fx y los metodos que implementan
-public class ArquidiocesisController implements cargarClerigos, guardarParroquiaSQL , cargarVicarias {
+public class ArquidiocesisController implements cargarClerigos, guardarParroquiaSQL, cargarVicarias {
     @FXML
     private AnchorPane ancorPane1;
 
@@ -601,7 +609,12 @@ public class ArquidiocesisController implements cargarClerigos, guardarParroquia
     void examinarRuta(ActionEvent event) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Seleccionar archivo de Arquidiócesis");
-        new FileChooser.ExtensionFilter("Archivos CSV (*.csv)",       "*.csv"); //solo se necesita csv
+        fileChooser.getExtensionFilters().addAll(
+        new FileChooser.ExtensionFilter("Todos los archivos soportados", "*.csv","*.sql"),
+        new FileChooser.ExtensionFilter("Archivos CSV (*.csv)",       "*.csv"),
+        new FileChooser.ExtensionFilter("Archivos SQL (*.sql)",       "*.sql")
+        );
+
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         File archivoTemporal = fileChooser.showOpenDialog(stage);
 
@@ -609,15 +622,12 @@ public class ArquidiocesisController implements cargarClerigos, guardarParroquia
             String nombreArchivo = archivoTemporal.getName().toLowerCase();
 
             // 2. Verificamos si termina en .csv
-            if (!nombreArchivo.endsWith(".csv")) {
-                mostrarAlerta("Formato Incorrecto", "El archivo seleccionado no es un CSV (.csv). Por favor, elige el archivo correcto.");
-
-
+            if (!nombreArchivo.endsWith(".csv") && !nombreArchivo.endsWith(".sql")) {
+                mostrarAlerta("Formato Incorrecto", "El archivo seleccionado no es un CSV (.csv) o SQL (.sql). Por favor, elige el archivo correcto.");
                 archivoSeleccionado = null;
                 textFieldRutaArchivo.clear();
                 return;
             }
-
 
             archivoSeleccionado = archivoTemporal;
             textFieldRutaArchivo.setText(archivoSeleccionado.getAbsolutePath());
@@ -634,62 +644,67 @@ public class ArquidiocesisController implements cargarClerigos, guardarParroquia
         String nombreArchivo = archivoSeleccionado.getName().toLowerCase().replace(".csv", "");
 
         try {
-            switch (nombreArchivo.toLowerCase()) {
 
-                case "actividades":
-                    importarActividadesCSV.importarActividades(archivoSeleccionado);
-                    break;
-                case "parroquia":
-                    importarParroquiasCSV.importarParroquias(archivoSeleccionado);
-                    break;
-                case "clerigo":
-                    importarClerigoCSV.importarClerigo(archivoSeleccionado);
-                    break;
+            if(nombreArchivo.endsWith(".sql")){
+                importarSQL.restaurarBaseDatos(archivoSeleccionado);
+                mostrarAlerta("Éxito", "La base ha sido restaurada correctamente.");
+            } else if (nombreArchivo.endsWith(".csv")) {
 
-                case "convenio":
-                    importarConvenioCSV.importarConvenio(archivoSeleccionado);
-                    break;
+                switch (nombreArchivo.toLowerCase()) {
 
-                case "evento":
-                    importarEventosCSV.importarEventos(archivoSeleccionado);
-                    break;
+                    case "actividades":
+                        importarActividadesCSV.importarActividades(archivoSeleccionado);
+                        break;
+                    case "parroquia":
+                        importarParroquiasCSV.importarParroquias(archivoSeleccionado);
+                        break;
+                    case "clerigo":
+                        importarClerigoCSV.importarClerigo(archivoSeleccionado);
+                        break;
 
-                case "lugares_culto":
-                    importarLugaresCultoCSV.importarLugaresCulto(archivoSeleccionado);
-                    break;
+                    case "convenio":
+                        importarConvenioCSV.importarConvenio(archivoSeleccionado);
+                        break;
 
-                case "pastorales":
-                    importarPastoralesCSV.importarPastorales(archivoSeleccionado);
-                    break;
+                    case "evento":
+                        importarEventosCSV.importarEventos(archivoSeleccionado);
+                        break;
 
-                case "proyectos_pastorales":
-                    importarProyectosPastoralesCSV.importarProyectosPastorales(archivoSeleccionado);
-                    break;
+                    case "lugares_culto":
+                        importarLugaresCultoCSV.importarLugaresCulto(archivoSeleccionado);
+                        break;
 
-                case "receptor_sacramento":
-                    importarReceptorSacramentoCSV.importarReceptorSacramento(archivoSeleccionado);
-                    break;
+                    case "pastorales":
+                        importarPastoralesCSV.importarPastorales(archivoSeleccionado);
+                        break;
 
-                case "registro_sacramento":
-                    importarRegistroSacramentoCSV.importarRegistroSacramento(archivoSeleccionado);
-                    break;
+                    case "proyectos_pastorales":
+                        importarProyectosPastoralesCSV.importarProyectosPastorales(archivoSeleccionado);
+                        break;
 
-                case "responsable":
-                    importarResponsableCSV.importarResponsable(archivoSeleccionado);
-                    break;
+                    case "receptor_sacramento":
+                        importarReceptorSacramentoCSV.importarReceptorSacramento(archivoSeleccionado);
+                        break;
 
-                case "vicaria":
-                    importarVicariasCSV.importarVicarias(archivoSeleccionado);
-                    break;
+                    case "registro_sacramento":
+                        importarRegistroSacramentoCSV.importarRegistroSacramento(archivoSeleccionado);
+                        break;
 
-                default:
-                    mostrarAlerta("Archivo Desconocido",
-                            "El archivo '" + nombreArchivo + "' no corresponde a ninguna tabla configurada.");
-                    return;
+                    case "responsable":
+                        importarResponsableCSV.importarResponsable(archivoSeleccionado);
+                        break;
+
+                    case "vicaria":
+                        importarVicariasCSV.importarVicarias(archivoSeleccionado);
+                        break;
+
+                    default:
+                        mostrarAlerta("Archivo Desconocido",
+                                "El archivo '" + nombreArchivo + "' no corresponde a ninguna tabla configurada.");
+                        return;
+                }
+                mostrarAlerta("Éxito", "Importación de " + nombreArchivo + " completada correctamente.");
             }
-
-
-            mostrarAlerta("Éxito", "Importación de " + nombreArchivo + " completada correctamente.");
             textFieldRutaArchivo.clear();
             archivoSeleccionado = null;
 

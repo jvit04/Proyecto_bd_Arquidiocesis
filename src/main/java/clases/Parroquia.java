@@ -1,4 +1,4 @@
-package application;
+package clases;
 
 import java.time.LocalDate;
 //Clase que sirve para almacenar los datos que se registraran de la parroquia.

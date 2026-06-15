@@ -1,7 +1,7 @@
-package application;
+package persistencia;
 
 import utilities.ConexionBD;
-import utilities.ExcepcionAmigable;
+import utilities.interfaces.ExcepcionAmigable;
 
 import java.io.BufferedReader;
 import java.io.File;

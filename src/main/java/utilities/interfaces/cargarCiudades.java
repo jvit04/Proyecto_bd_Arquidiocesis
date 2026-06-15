@@ -1,4 +1,4 @@
-package application;
+package utilities.interfaces;
 
 import utilities.Paths;
 

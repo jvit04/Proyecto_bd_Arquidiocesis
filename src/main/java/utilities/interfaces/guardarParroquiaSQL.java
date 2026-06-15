@@ -1,5 +1,6 @@
-package application;
+package utilities.interfaces;
 
+import clases.Parroquia;
 import utilities.ConexionBD;
 
 import java.sql.*;

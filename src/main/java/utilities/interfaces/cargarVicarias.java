@@ -1,5 +1,6 @@
-package application;
+package utilities.interfaces;
 
+import clases.Vicaria;
 import utilities.Paths;
 
 import java.sql.*;

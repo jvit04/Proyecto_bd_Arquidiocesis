@@ -1,5 +1,6 @@
-package application;
+package utilities.interfaces;
 
+import clases.Clerigo;
 import utilities.Paths;
 
 import java.sql.*;
