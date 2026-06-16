@@ -1,5 +1,5 @@
 # Sistema de Gestión Parroquial y Administración de la Arquidiócesis
-Materia: Bases de Datos | Periodo: 2025-2 | Estado: Completado
+Materia: Bases de Datos I | Periodo: 2025-2 | Estado: Completado
 
 ## Equipo de trabajo
 - David Motoche ([GdavidM](https://github.com/GdavidM))
